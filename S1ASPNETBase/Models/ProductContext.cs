@@ -58,7 +58,7 @@ namespace S1ASPNETBase.Models
                 entity.HasIndex(x => x.Name).IsUnique();
 
                 entity.Property(e => e.Name)
-                .HasColumnName(@"ProductName")
+                .HasColumnName(@"CategoryName")
                 .HasMaxLength(255)
                 .IsRequired();
 

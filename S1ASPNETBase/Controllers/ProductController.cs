@@ -101,12 +101,19 @@ namespace S1ASPNETBase.Controllers
             {
                 using (var context = new ProductContext())
                 {
-                    context.Products.Where(x => x.Name.ToLower().Equals(name.ToLower()))
+                    if (context.Products.Any(x => x.Name.ToLower().Equals(name.ToLower())))
+                    {
+                        context.Products.Where(x => x.Name.ToLower().Equals(name.ToLower()))
                         .ExecuteUpdate(setters => setters
                         .SetProperty(x => x.Description, dtoUpdateProducts.Description)
                         .SetProperty(x => x.Cost, dtoUpdateProducts.Cost)
                         .SetProperty(x => x.CategoryId, dtoUpdateProducts.CategoryId));
-                    return Ok();
+                        return Ok();
+                    }
+                    else
+                    {
+                        return StatusCode(409);
+                    }
                 }
             }
             catch
