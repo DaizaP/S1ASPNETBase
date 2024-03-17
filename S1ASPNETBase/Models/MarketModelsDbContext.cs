@@ -12,10 +12,6 @@ namespace S1ASPNETBase.Models
         {
         }
 
-        public MarketModelsDbContext()
-        {
-        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
