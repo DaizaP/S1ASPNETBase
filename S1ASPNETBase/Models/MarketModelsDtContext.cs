@@ -2,22 +2,19 @@
 
 namespace S1ASPNETBase.Models
 {
-    public class ProductContext : DbContext
+    public class MarketModelsDtContext : DbContext
     {
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Storage> Storages { get; set; }
 
-        public ProductContext() { }
-        public ProductContext(DbContextOptions<ProductContext> dbc) : base(dbc) { }
+        public MarketModelsDtContext(DbContextOptions<MarketModelsDtContext> dbc) : base(dbc)
+        {
+        }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseNpgsql(
-                "Host=localhost; " +
-                "Username=postgres; " +
-                "Password=example; " +
-                "DataBase=S1ASPRNetProductStorage;")
-            .LogTo(Console.WriteLine);
+        public MarketModelsDtContext()
+        {
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

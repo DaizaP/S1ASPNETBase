@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using S1ASPNETBase.Abstraction;
 using S1ASPNETBase.Dto;
 using S1ASPNETBase.Models;
 
@@ -9,63 +10,42 @@ namespace S1ASPNETBase.Controllers
     [Route("[controller]")]
     public class ProductController : ControllerBase
     {
-        [HttpGet("getProducts")]
-        public IActionResult GetProducts()
-        {
-            try
-            {
-                var context = new ProductContext();
-                IQueryable<Product> products = context.Products.Select(x => new Product
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Description = x.Description,
-                    Category = x.Category,
-                    Cost = x.Cost,
-                    CategoryId = x.CategoryId,
-                    Storages = x.Storages
-                });
-                return Ok(products);
+        private readonly IProductRepository _productRepository;
 
-            }
-            catch
+        public ProductController(IProductRepository productRepository)
+        {
+            _productRepository = productRepository;
+        }
+
+        [HttpGet("getProducts")]
+        public IActionResult GetProducts([FromQuery]bool csv, bool url)
+        {
+            if (csv)
             {
-                return StatusCode(500);
+                var products = _productRepository.GetProductsCsv();
+                if (url)
+                {
+                    string filename = "products" + DateTime.Now.ToBinary().ToString() + ".csv";
+                    System.IO.File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), "StaticFiles", filename), products);
+                    return Ok("https://" + Request.Host.ToString() + "/static/" + filename);
+                }
+                else
+                {
+                    return File(new System.Text.UTF8Encoding().GetBytes(products), "text/csv", "products.csv");
+                }
+            }
+            else
+            {
+                var products = _productRepository.GetProducts();
+                return Ok(products);
             }
         }
 
         [HttpPost("postProducts")]
-        public IActionResult PostProducts(
-            [FromQuery] string name,
-            string description,
-            int categoryId,
-            int cost)
+        public IActionResult PostProducts([FromBody] ProductDto productDto)
         {
-            try
-            {
-                var context = new ProductContext();
-                if (!context.Products.Any(x => x.Name.ToLower().Equals(name.ToLower())))
-                {
-                    context.Add(new Product()
-                    {
-                        Name = name,
-                        Description = description,
-                        CategoryId = categoryId,
-                        Cost = cost
-                    });
-                    context.SaveChanges();
-                    context.Dispose();
-                    return Ok();
-                }
-                else
-                {
-                    return StatusCode(409);
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            var result = _productRepository.AddProduct(productDto);
+            return Ok(result);
         }
 
         [HttpDelete("deleteProducts")]
@@ -73,7 +53,7 @@ namespace S1ASPNETBase.Controllers
         {
             try
             {
-                using (var context = new ProductContext())
+                using (var context = new MarketModelsDtContext())
                 {
                     if (context.Products.Any(x => x.Name.ToLower().Equals(name.ToLower())))
                     {
@@ -95,11 +75,11 @@ namespace S1ASPNETBase.Controllers
         [HttpPatch("updateProducts")]
         public IActionResult UpdateProducts(
             [FromQuery] string name,
-            [FromBody] DtoUpdateProducts dtoUpdateProducts)
+            [FromBody] UpdateProductsDto dtoUpdateProducts)
         {
             try
             {
-                using (var context = new ProductContext())
+                using (var context = new MarketModelsDtContext())
                 {
                     if (context.Products.Any(x => x.Name.ToLower().Equals(name.ToLower())))
                     {

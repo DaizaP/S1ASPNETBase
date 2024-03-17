@@ -1,6 +1,6 @@
 ﻿namespace S1ASPNETBase.Dto
 {
-    public class DtoUpdateProducts
+    public class UpdateProductsDto
     {
         public string? Description { get; set; }
         public int Cost { get; set; }

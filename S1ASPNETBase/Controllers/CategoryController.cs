@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using S1ASPNETBase.Abstraction;
+using S1ASPNETBase.Dto;
 using S1ASPNETBase.Models;
+using S1ASPNETBase.Repo;
 
 namespace S1ASPNETBase.Controllers
 {
@@ -8,50 +11,23 @@ namespace S1ASPNETBase.Controllers
     [Route("[controller]")]
     public class CategoryController : ControllerBase
     {
+        private readonly ICategoryRepository _categoryRepository;
+        public CategoryController(ICategoryRepository categoryRepository)
+        {
+            _categoryRepository = categoryRepository;
+        }
+
         [HttpGet("getCategories")]
         public IActionResult GetCategories()
         {
-            try
-            {
-                var context = new ProductContext();
-                IQueryable<Category> categories = context.Categories.Select(x => new Category
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                });
-                return Ok(categories);
-
-            }
-            catch
-            {
-                return StatusCode(500);
-            }
+            var categories = _categoryRepository.GetCategories();
+            return Ok(categories);
         }
         [HttpPost("postCategories")]
-        public IActionResult PostCategories(
-            [FromQuery] string name)
+        public IActionResult PostCategories([FromBody] CategoryDto categoryDto)
         {
-            try
-            {
-                var context = new ProductContext();
-                if (!context.Categories.Any(x => x.Name.ToLower().Equals(name.ToLower())))
-                {
-                    context.Add(new Category()
-                    {
-                        Name = name
-                    });
-                    context.SaveChanges();
-                    return Ok();
-                }
-                else
-                {
-                    return StatusCode(409);
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex);
-            }
+            var result = _categoryRepository.AddCategory(categoryDto);
+            return Ok(result);
         }
 
         [HttpDelete("deleteCategories")]
@@ -59,7 +35,7 @@ namespace S1ASPNETBase.Controllers
         {
             try
             {
-                using (var context = new ProductContext())
+                using (var context = new MarketModelsDtContext())
                 {
                     if (context.Categories.Any(x => x.Name.ToLower().Equals(name.ToLower())))
                     {

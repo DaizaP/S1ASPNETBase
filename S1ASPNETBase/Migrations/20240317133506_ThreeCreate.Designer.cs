@@ -11,8 +11,8 @@ using S1ASPNETBase.Models;
 namespace S1ASPNETBase.Migrations
 {
     [DbContext(typeof(MarketModelsDtContext))]
-    [Migration("20240313224916_SecondCreate")]
-    partial class SecondCreate
+    [Migration("20240317133506_ThreeCreate")]
+    partial class ThreeCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
