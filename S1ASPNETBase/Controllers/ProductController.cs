@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using S1ASPNETBase.Abstraction;
 using S1ASPNETBase.Dto;
-using S1ASPNETBase.Models;
 
 namespace S1ASPNETBase.Controllers
 {
@@ -18,7 +16,7 @@ namespace S1ASPNETBase.Controllers
         }
 
         [HttpGet("getProducts")]
-        public IActionResult GetProducts([FromQuery]bool csv, bool url)
+        public IActionResult GetProducts([FromQuery] bool csv, bool url)
         {
             if (csv)
             {
@@ -53,17 +51,14 @@ namespace S1ASPNETBase.Controllers
         {
             try
             {
-                using (var context = new MarketModelsDtContext())
+                var result = _productRepository.DelProduct(name);
+                if (result)
                 {
-                    if (context.Products.Any(x => x.Name.ToLower().Equals(name.ToLower())))
-                    {
-                        context.Products.Where(x => x.Name.ToLower().Equals(name.ToLower())).ExecuteDelete();
-                        return Ok();
-                    }
-                    else
-                    {
-                        return StatusCode(409);
-                    }
+                    return Ok();
+                }
+                else
+                {
+                    return StatusCode(409, "Продукта с таким именем не существует");
                 }
             }
             catch
@@ -79,21 +74,14 @@ namespace S1ASPNETBase.Controllers
         {
             try
             {
-                using (var context = new MarketModelsDtContext())
+                var result = _productRepository.UpdProduct(name, dtoUpdateProducts);
+                if (result)
                 {
-                    if (context.Products.Any(x => x.Name.ToLower().Equals(name.ToLower())))
-                    {
-                        context.Products.Where(x => x.Name.ToLower().Equals(name.ToLower()))
-                        .ExecuteUpdate(setters => setters
-                        .SetProperty(x => x.Description, dtoUpdateProducts.Description)
-                        .SetProperty(x => x.Cost, dtoUpdateProducts.Cost)
-                        .SetProperty(x => x.CategoryId, dtoUpdateProducts.CategoryId));
-                        return Ok();
-                    }
-                    else
-                    {
-                        return StatusCode(409);
-                    }
+                    return Ok();
+                }
+                else
+                {
+                    return StatusCode(409, "Продукт не найден");
                 }
             }
             catch

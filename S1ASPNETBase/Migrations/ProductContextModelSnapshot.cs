@@ -9,7 +9,7 @@ using S1ASPNETBase.Models;
 
 namespace S1ASPNETBase.Migrations
 {
-    [DbContext(typeof(MarketModelsDtContext))]
+    [DbContext(typeof(MarketModelsDbContext))]
     partial class ProductContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

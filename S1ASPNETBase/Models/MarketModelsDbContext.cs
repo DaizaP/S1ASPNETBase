@@ -2,17 +2,17 @@
 
 namespace S1ASPNETBase.Models
 {
-    public class MarketModelsDtContext : DbContext
+    public class MarketModelsDbContext : DbContext
     {
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Storage> Storages { get; set; }
 
-        public MarketModelsDtContext(DbContextOptions<MarketModelsDtContext> dbc) : base(dbc)
+        public MarketModelsDbContext(DbContextOptions<MarketModelsDbContext> dbc) : base(dbc)
         {
         }
 
-        public MarketModelsDtContext()
+        public MarketModelsDbContext()
         {
         }
 

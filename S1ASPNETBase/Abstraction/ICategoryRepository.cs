@@ -6,5 +6,6 @@ namespace S1ASPNETBase.Abstraction
     {
         public int AddCategory(CategoryDto categoryDto);
         public IEnumerable<CategoryDto> GetCategories();
+        public bool DelCategory(string name);
     }
 }

@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using S1ASPNETBase.Abstraction;
 using S1ASPNETBase.Dto;
-using S1ASPNETBase.Models;
-using S1ASPNETBase.Repo;
 
 namespace S1ASPNETBase.Controllers
 {
@@ -35,19 +32,14 @@ namespace S1ASPNETBase.Controllers
         {
             try
             {
-                using (var context = new MarketModelsDtContext())
+                var result = _categoryRepository.DelCategory(name);
+                if (result)
                 {
-                    if (context.Categories.Any(x => x.Name.ToLower().Equals(name.ToLower())))
-                    {
-                        context.Categories.Where(x => x.Name.ToLower()
-                        .Equals(name.ToLower()))
-                            .ExecuteDelete();
-                        return Ok();
-                    }
-                    else
-                    {
-                        return StatusCode(409);
-                    }
+                    return Ok();
+                }
+                else
+                {
+                    return StatusCode(409, "Категории с таким именем не существует");
                 }
             }
             catch

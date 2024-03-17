@@ -10,7 +10,7 @@ using S1ASPNETBase.Models;
 
 namespace S1ASPNETBase.Migrations
 {
-    [DbContext(typeof(MarketModelsDtContext))]
+    [DbContext(typeof(MarketModelsDbContext))]
     [Migration("20240313173654_InitialCreate")]
     partial class InitialCreate
     {

@@ -1,6 +1,3 @@
-
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using S1ASPNETBase.Abstraction;
@@ -37,7 +34,7 @@ namespace S1ASPNETBase
             builder.Services.AddMemoryCache(o => o.TrackStatistics = true);
 
             string? connectionString = builder.Configuration.GetConnectionString("db");
-            builder.Services.AddDbContext<MarketModelsDtContext>(options => options.UseNpgsql(connectionString));
+            builder.Services.AddDbContext<MarketModelsDbContext>(o => o.UseNpgsql(connectionString));
 
             return builder.Build();
         }

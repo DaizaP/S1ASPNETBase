@@ -1,11 +1,10 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using S1ASPNETBase.Abstraction;
 using S1ASPNETBase.Dto;
 using S1ASPNETBase.Models;
 using S1ASPNETBase.Services.FileExtractor;
-using System.Text;
 
 namespace S1ASPNETBase.Repo
 {
@@ -13,29 +12,28 @@ namespace S1ASPNETBase.Repo
     {
         readonly private IMapper _mapper;
         readonly private IMemoryCache _memoryCache;
-        public ProductRepository(IMapper mapper, IMemoryCache memoryCache)
+        readonly private MarketModelsDbContext _marketModelsDbContext;
+        public ProductRepository(IMapper mapper, IMemoryCache memoryCache, MarketModelsDbContext marketModelsDbContext)
         {
             _mapper = mapper;
             _memoryCache = memoryCache;
+            _marketModelsDbContext = marketModelsDbContext;
         }
 
         public int AddProduct(ProductDto productDto)
         {
-            using (var context = new MarketModelsDtContext())
+            var entityProduct = _marketModelsDbContext.Products
+                .FirstOrDefault(
+                x => x.Name.ToLower() == productDto.Name.ToLower()
+                );
+            if (entityProduct == null)
             {
-                var entityProduct = context.Products
-                    .FirstOrDefault(
-                    x => x.Name.ToLower() == productDto.Name.ToLower()
-                    );
-                if (entityProduct == null)
-                {
-                    entityProduct = _mapper.Map<Product>(productDto);
-                    context.Products.Add(entityProduct);
-                    context.SaveChanges();
-                    _memoryCache.Remove("products");
-                }
-                return entityProduct.Id;
+                entityProduct = _mapper.Map<Product>(productDto);
+                _marketModelsDbContext.Products.Add(entityProduct);
+                _marketModelsDbContext.SaveChanges();
+                _memoryCache.Remove("products");
             }
+            return entityProduct.Id;
 
         }
 
@@ -45,12 +43,9 @@ namespace S1ASPNETBase.Repo
             {
                 return products;
             }
-            using (var context = new MarketModelsDtContext())
-            {
-                var productList = context.Products.Select(x => _mapper.Map<ProductDto>(x)).ToList();
-                _memoryCache.Set("products", productList, TimeSpan.FromMinutes(30));
-                return productList;
-            }
+            var productList = _marketModelsDbContext.Products.Select(x => _mapper.Map<ProductDto>(x)).ToList();
+            _memoryCache.Set("products", productList, TimeSpan.FromMinutes(30));
+            return productList;
         }
 
         public string GetProductsCsv()
@@ -62,14 +57,39 @@ namespace S1ASPNETBase.Repo
             }
             else
             {
-                using (var context = new MarketModelsDtContext())
-                {
-                    var productList = context.Products.Select(x => _mapper.Map<ProductDto>(x)).ToList();
-                    _memoryCache.Set("products", productList, TimeSpan.FromMinutes(30));
-                    content = GetCsv.GetProducts(productList);
-                }
+                var productList = _marketModelsDbContext.Products.Select(x => _mapper.Map<ProductDto>(x)).ToList();
+                _memoryCache.Set("products", productList, TimeSpan.FromMinutes(30));
+                content = GetCsv.GetProducts(productList);
             }
             return content;
+        }
+        public bool DelProduct(string name)
+        {
+            if (!_marketModelsDbContext.Products.Any(x => x.Name.ToLower().Equals(name.ToLower())))
+            {
+                return false;
+            }
+            _marketModelsDbContext.Products.Where(x => x.Name.ToLower().Equals(name.ToLower())).ExecuteDelete();
+            _memoryCache.Remove("products");
+            return true;
+        }
+
+        public bool UpdProduct(string name, UpdateProductsDto updateProductsDto)
+        {
+            if (_marketModelsDbContext.Products.Any(x => x.Name.ToLower().Equals(name.ToLower())))
+            {
+                _marketModelsDbContext.Products.Where(x => x.Name.ToLower().Equals(name.ToLower()))
+                .ExecuteUpdate(setters => setters
+                .SetProperty(x => x.Description, updateProductsDto.Description)
+                .SetProperty(x => x.Cost, updateProductsDto.Cost)
+                .SetProperty(x => x.CategoryId, updateProductsDto.CategoryId));
+                _memoryCache.Remove("products");
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }
